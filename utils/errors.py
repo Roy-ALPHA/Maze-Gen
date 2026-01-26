@@ -1,0 +1,2 @@
+class configsError(Exception):
+    pass

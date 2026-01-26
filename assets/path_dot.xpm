@@ -1,0 +1,18 @@
+/* XPM */
+static char *path_dot[] = {
+/* width height num_colors chars_per_pixel */
+"8 8 3 1",
+/* colors */
+"  c None",
+". c #FFFF00",
+"+ c #FFD700",
+/* pixels */
+"   ..   ",
+"  ....  ",
+" .++++. ",
+" .++++. ",
+" .++++. ",
+" .++++. ",
+"  ....  ",
+"   ..   "
+};
