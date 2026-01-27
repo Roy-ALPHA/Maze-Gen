@@ -1,7 +1,5 @@
 import random
-
-class InvalidDistinationFor42Path(Exception):
-    pass
+from utils.errors import InvalidDistinationFor42Path
 
 class Cell:
     def __init__(self):
