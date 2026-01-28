@@ -7,7 +7,7 @@ from utils.errors import InvalidCoordinates
 try:
     from mlx import Mlx
 except ModuleNotFoundError:
-    ModuleNotFoundError(
+    raise ModuleNotFoundError(
         "❌ Error: MiniLibX (mlx) module not found.\n"
         "👉 Make sure you:\n"
         "   - Built MiniLibX with `make`\n"
@@ -18,13 +18,19 @@ except ModuleNotFoundError:
 def mlx_render(width, length, ENTRY, EXIT):
     width_pixel = width * 40
     length_pixel = length * 40
-    if width_pixel > 1920 or length_pixel > 1000:
+    if width_pixel > 1920 or length_pixel > 1000: 
         raise InvalidCoordinates(
                 "❌ Error: Window size exceeds screen resolution.\n"
                 f"Requested: {width}x{length}\n"
                 "Maximum allowed: 48x25\n"
                 "👉 Please reduce WIDTH or HEIGHT to fit your screen."
         )
+    if width < 6 or length < 6:
+        raise InvalidCoordinates(
+            "❌ Error: Invalid coordinates.\n"
+            "Minimum allowed: 6x6"
+        )
+
     mlx1 = Mlx()
     k = mlx1.mlx_init()
 
@@ -47,13 +53,18 @@ def mlx_render(width, length, ENTRY, EXIT):
         if 0 <= x < width_pixel and 0 <= y < length_pixel:
             offset = y * size_line + x * 4
             if offset + 4 <= len(data):
-                data[offset] = color & 0xFF
-                data[offset + 1] = (color >> 8) & 0xFF
-                data[offset + 2] = (color >> 16) & 0xFF
-                data[offset + 3] = 0xFF
+                byte = color.to_bytes(4, 'little')
+                data[offset] = byte[0]
+                data[offset + 1] = byte[1]
+                data[offset + 2] = byte[2]
+                data[offset + 3] = 255
 
-    bg_img, bg_width, bg_lenght = mlx1.mlx_xpm_file_to_image(k, "assets/maze_bg_40.xpm")
-    pl_img, pl_width, pl_lenght = mlx1.mlx_xpm_file_to_image(k, "assets/player_idle1.xpm")
+    bg_img, bg_width, bg_lenght = mlx1.mlx_xpm_file_to_image(
+                                        k,
+                                        "assets/maze_bg_40.xpm")
+    pl_img, pl_width, pl_lenght = mlx1.mlx_xpm_file_to_image(
+                                        k,
+                                        "assets/player_idle1.xpm")
 
     def back_img():
         for y in range(0, length_pixel, bg_lenght):
@@ -77,17 +88,32 @@ def mlx_render(width, length, ENTRY, EXIT):
     ]
     wall_color = random.choice(colors)
 
-    path_end_img, path_end_width, path_end_length = mlx1.mlx_xpm_file_to_image(k, "assets/path_end.xpm")
-    path_start_img, path_start_width, path_start_length = mlx1.mlx_xpm_file_to_image(k, "assets/path_start.xpm")
-    down_img, tmp1, tmp2 = mlx1.mlx_xpm_file_to_image(k, "assets/arrow_down.xpm")
-    up_img, tmp1, tmp2 = mlx1.mlx_xpm_file_to_image(k, "assets/arrow_up.xpm")
-    right_img, tmp1, tmp2 = mlx1.mlx_xpm_file_to_image(k, "assets/arrow_right.xpm")
-    left_img, tmp1, tmp2 = mlx1.mlx_xpm_file_to_image(k, "assets/arrow_left.xpm")
+    path_end_img, path_end_width, path_end_length = mlx1.mlx_xpm_file_to_image(
+        k, "assets/path_end.xpm")
+    path_start_img, _, _ = mlx1.mlx_xpm_file_to_image(
+        k, "assets/path_start.xpm")
+    down_img, _, _ = mlx1.mlx_xpm_file_to_image(
+        k, "assets/arrow_down.xpm")
+    up_img, _, _ = mlx1.mlx_xpm_file_to_image(
+        k, "assets/arrow_up.xpm")
+    right_img, _, _ = mlx1.mlx_xpm_file_to_image(
+        k, "assets/arrow_right.xpm")
+    left_img, _, _ = mlx1.mlx_xpm_file_to_image(
+        k, "assets/arrow_left.xpm")
 
     directions = [down_img, up_img, right_img, left_img]
 
-    mlx1.mlx_put_image_to_window(k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
-    mlx1.mlx_put_image_to_window(k, win, path_end_img, EXIT[0] * 40 + 10, EXIT[1] * 40 + 10)
+    mlx1.mlx_put_image_to_window(k,
+                                 win,
+                                 path_start_img,
+                                 ENTRY[0] * 40 + 10,
+                                 ENTRY[1] * 40 + 10)
+
+    mlx1.mlx_put_image_to_window(k,
+                                 win,
+                                 path_end_img,
+                                 EXIT[0] * 40 + 10,
+                                 EXIT[1] * 40 + 10)
 
     pl_x = ENTRY[0] * 40 + 10
     pl_y = ENTRY[1] * 40 + 10
@@ -112,7 +138,11 @@ def mlx_render(width, length, ENTRY, EXIT):
                 py = y * CELL + 10
                 if (x, y) != ENTRY and (x, y) != EXIT and (x, y) != (pl_x // 40, pl_y // 40):
                     time.sleep(0.0001)
-                    mlx1.mlx_put_image_to_window(k, win, directions[direction_i], px, py)
+                    mlx1.mlx_put_image_to_window(k,
+                                                 win,
+                                                 directions[direction_i],
+                                                 px,
+                                                 py)
                 i += 1
                 break
 
@@ -129,6 +159,7 @@ def mlx_render(width, length, ENTRY, EXIT):
                 if cell.south:
                     for x in range(x_offset, x_offset + CELL):
                         put_pixel(x, y_offset + CELL - 1, color)
+
                 if sleep is True:
                     time.sleep(0.0001)
                     mlx1.mlx_put_image_to_window(k, win, img, 0, 0)
@@ -156,6 +187,9 @@ def mlx_render(width, length, ENTRY, EXIT):
     prev_y = 0
 
     def regenerate_maze():
+        nonlocal pl_x, pl_y
+        pl_x = ENTRY[0] * 40 + 10
+        pl_y = ENTRY[1] * 40 + 10
         nonlocal mz
         maze = MazeGenerator(width, length)
         try:
@@ -169,8 +203,10 @@ def mlx_render(width, length, ENTRY, EXIT):
         back_img()
         draw_maze(mz, 0x000000, True)
         draw_maze(new_maze, wall_color, True)
-        mlx1.mlx_put_image_to_window(k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
-        mlx1.mlx_put_image_to_window(k, win, path_end_img, EXIT[0] * 40 + 10, EXIT[1] * 40 + 10)
+        mlx1.mlx_put_image_to_window(
+            k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
+        mlx1.mlx_put_image_to_window(
+            k, win, path_end_img, EXIT[0] * 40 + 10, EXIT[1] * 40 + 10)
         mz = new_maze
 
     def on_key(keycode, param):
@@ -178,33 +214,54 @@ def mlx_render(width, length, ENTRY, EXIT):
         prev_x = pl_x
         prev_y = pl_y
         is_moved = False
+
         if keycode == 65307:
             mlx1.mlx_loop_exit(k)
+
         if keycode == 99:
             wall_color = random.choice(colors)
             draw_maze(mz, wall_color, True)
+
         if keycode == 65364 and mz[pl_y // 40][pl_x // 40].south is False:
             is_moved = True
             pl_y += 40
+
         elif keycode == 65362 and mz[pl_y // 40][pl_x // 40].north is False:
             is_moved = True
             pl_y -= 40
+
         elif keycode == 65363 and mz[pl_y // 40][pl_x // 40].east is False:
             is_moved = True
             pl_x += 40
+
         elif keycode == 65361 and mz[pl_y // 40][pl_x // 40].west is False:
             is_moved = True
             pl_x -= 40
+
         if is_moved is True:
             if (pl_x, pl_y) == (EXIT[0] * 40 + 10, EXIT[1] * 40 + 10):
                 mlx1.mlx_loop_exit(k)
-            mlx1.mlx_put_image_to_window(k, win, bg_img, prev_x - 10, prev_y - 10)
+            mlx1.mlx_put_image_to_window(
+                k, win, bg_img, prev_x - 10, prev_y - 10)
             mlx1.mlx_put_image_to_window(k, win, bg_img, pl_x - 10, pl_y - 10)
-            mlx1.mlx_put_image_to_window(k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
+            mlx1.mlx_put_image_to_window(
+                k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
+
         if keycode == 112:
             draw_path()
+
         if keycode == 103:
             regenerate_maze()
+
+        if keycode == 104:
+            back_img()
+            back_img()
+            mlx1.mlx_put_image_to_window(
+                k, win, path_start_img, ENTRY[0] * 40 + 10, ENTRY[1] * 40 + 10)
+            mlx1.mlx_put_image_to_window(
+                k, win, path_end_img, EXIT[0] * 40 + 10, EXIT[1] * 40 + 10)
+            player(pl_x, pl_y)
+
         render()
 
     mlx1.mlx_key_hook(win, on_key, None)

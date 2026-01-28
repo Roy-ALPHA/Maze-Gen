@@ -10,9 +10,10 @@
 
 
 
-WIDTH        = 48
-HEIGHT= 26
-ENTRY      = 0, 0
-EXIT           = 14, 8
+
+WIDTH        = 25
+HEIGHT= 20
+ENTRY      = 1, 1
+EXIT           = 18, 19 
 OUTPUT_FILE      =         maze.txt
-PERFECT=True
+PERFECT=False
